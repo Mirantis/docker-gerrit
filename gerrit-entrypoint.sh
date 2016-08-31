@@ -78,7 +78,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
 
   #Section theme
   set_gerrit_config gerrit.canLoadInIframe "true"
-  mv /tmp/GerritSite.css ${GERRIT_SITE}/etc/
+  cp /tmp/GerritSite.css ${GERRIT_SITE}/etc/
 
   #Section auth
   [ -z "${AUTH_TYPE}" ]           || set_gerrit_config auth.type "${AUTH_TYPE}"

@@ -34,8 +34,9 @@ RUN set -x \
 
 RUN mkdir /docker-entrypoint-init.d
 
-#Download gerrit.war
-RUN wget https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war -O $GERRIT_WAR
+#Download gerrit.war TEMPORARY URL for fix with iframe
+#RUN wget https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war -O $GERRIT_WAR
+RUN wget https://gerrit-ci.gerritforge.com/job/Gerrit-stable-2.13/20/artifact/buck-out/gen/gerrit.war -O $GERRIT_WAR
 #Only for local test
 #COPY gerrit-${GERRIT_VERSION}.war $GERRIT_WAR
 
