@@ -76,6 +76,10 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ -z "${DB_ENV_MYSQL_PASSWORD}" ] || set_secure_config database.password "${DB_ENV_MYSQL_PASSWORD}"
   fi
 
+  #Section theme
+  set_gerrit_config gerrit.canLoadInIframe "true"
+  mv /tmp/GerritSite.css ${GERRIT_SITE}/etc/
+
   #Section auth
   [ -z "${AUTH_TYPE}" ]           || set_gerrit_config auth.type "${AUTH_TYPE}"
   [ -z "${AUTH_HTTP_HEADER}" ]    || set_gerrit_config auth.httpHeader "${AUTH_HTTP_HEADER}"
