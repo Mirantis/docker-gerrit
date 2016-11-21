@@ -35,8 +35,8 @@ RUN set -x \
 RUN mkdir /docker-entrypoint-init.d
 
 #Download gerrit.war TEMPORARY URL for fix with iframe
-#RUN wget https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war -O $GERRIT_WAR
-RUN wget https://gerrit-ci.gerritforge.com/job/Gerrit-stable-2.13/20/artifact/buck-out/gen/gerrit.war -O $GERRIT_WAR
+RUN wget https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war -O $GERRIT_WAR
+#RUN wget https://gerrit-ci.gerritforge.com/job/Gerrit-stable-2.13/20/artifact/buck-out/gen/gerrit.war -O $GERRIT_WAR
 #Only for local test
 #COPY gerrit-${GERRIT_VERSION}.war $GERRIT_WAR
 
@@ -48,6 +48,8 @@ ENV GERRITFORGE_ARTIFACT_DIR=lastSuccessfulBuild/artifact/buck-out/gen/plugins
 RUN wget \
     ${GERRITFORGE_URL}/job/plugin-delete-project-${PLUGIN_VERSION}/${GERRITFORGE_ARTIFACT_DIR}/delete-project/delete-project.jar \
     -O ${GERRIT_HOME}/delete-project.jar
+
+COPY add-user-plugin-2.11.3.jar $GERRIT_HOME/add-user-plugin.jar
 
 #events-log
 #This plugin is required by gerrit-trigger plugin of Jenkins.
