@@ -48,6 +48,8 @@ RUN wget \
     ${GERRITFORGE_URL}/job/plugin-delete-project-${PLUGIN_VERSION}/${GERRITFORGE_ARTIFACT_DIR}/delete-project/delete-project.jar \
     -O ${GERRIT_HOME}/delete-project.jar
 
+COPY add-user-plugin-2.11.3.jar $GERRIT_HOME/add-user-plugin.jar
+
 #events-log
 #This plugin is required by gerrit-trigger plugin of Jenkins.
 RUN wget \
@@ -55,9 +57,9 @@ RUN wget \
     -O ${GERRIT_HOME}/events-log.jar
 
 #oauth2 plugin
-RUN wget \
-    ${GERRITFORGE_URL}/job/plugin-gerrit-oauth-provider-gh-master/${GERRITFORGE_ARTIFACT_DIR}/gerrit-oauth-provider/gerrit-oauth-provider.jar \
-    -O ${GERRIT_HOME}/gerrit-oauth-provider.jar
+#RUN wget \
+#    ${GERRITFORGE_URL}/job/plugin-gerrit-oauth-provider-gh-master/${GERRITFORGE_ARTIFACT_DIR}/gerrit-oauth-provider/gerrit-oauth-provider.jar \
+#    -O ${GERRIT_HOME}/gerrit-oauth-provider.jar
 
 #download bouncy castle
 ENV BOUNCY_CASTLE_VERSION 1.54
