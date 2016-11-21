@@ -1,0 +1,7 @@
+version: '2'
+services:
+  gerrit_master:
+    image: gerrit:2.12.3
+    ports: ['8080:8080', '29418:29418']
+#    volumes: ['/srv/volumes/gerrit:/var/gerrit/review_site']
+    env_file: docker-compose.env
