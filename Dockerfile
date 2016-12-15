@@ -1,4 +1,4 @@
-FROM java:openjdk-8-jdk-alpine
+FROM java:openjdk-8-jre-alpine
 
 MAINTAINER zsx <thinkernel@gmail.com>
 
@@ -6,7 +6,7 @@ MAINTAINER zsx <thinkernel@gmail.com>
 ENV GERRIT_HOME /var/gerrit
 ENV GERRIT_SITE ${GERRIT_HOME}/review_site
 ENV GERRIT_WAR ${GERRIT_HOME}/gerrit.war
-ENV GERRIT_VERSION 2.12.3
+ENV GERRIT_VERSION 2.12.6
 ENV GERRIT_USER gerrit2
 ENV GERRIT_INIT_ARGS ""
 
@@ -14,7 +14,7 @@ ENV GERRIT_INIT_ARGS ""
 RUN adduser -D -h "${GERRIT_HOME}" -g "Gerrit User" -s /sbin/nologin "${GERRIT_USER}"
 
 RUN set -x \
-    && apk add --update --no-cache git openssh openssl bash perl perl-cgi git-gitweb
+    && apk add --update --no-cache git openssh openssl bash perl perl-cgi git-gitweb curl
 
 # Grab gosu for easy step-down from root
 ENV GOSU_VERSION 1.9
@@ -57,9 +57,9 @@ RUN wget \
     -O ${GERRIT_HOME}/events-log.jar
 
 #oauth2 plugin
-#RUN wget \
-#    ${GERRITFORGE_URL}/job/plugin-gerrit-oauth-provider-gh-master/${GERRITFORGE_ARTIFACT_DIR}/gerrit-oauth-provider/gerrit-oauth-provider.jar \
-#    -O ${GERRIT_HOME}/gerrit-oauth-provider.jar
+RUN wget \
+    https://github.com/davido/gerrit-oauth-provider/releases/download/v2.12.4/gerrit-oauth-provider.jar \
+    -O ${GERRIT_HOME}/gerrit-oauth-provider.jar
 
 #download bouncy castle
 ENV BOUNCY_CASTLE_VERSION 1.54

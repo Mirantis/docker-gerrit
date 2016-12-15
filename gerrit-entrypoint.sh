@@ -39,8 +39,8 @@ if [ "$1" = "/gerrit-start.sh" ]; then
 
   # Install external plugins
   [ ! -d ${GERRIT_SITE}/plugins ] && mkdir ${GERRIT_SITE}/plugins && chown -R ${GERRIT_USER} "${GERRIT_SITE}/plugins"
-  cp -f ${GERRIT_HOME}/delete-project.jar ${GERRIT_SITE}/plugins/delete-project.jar
-  cp -f ${GERRIT_HOME}/events-log.jar ${GERRIT_SITE}/plugins/events-log.jar
+  gosu ${GERRIT_USER} cp -f ${GERRIT_HOME}/delete-project.jar ${GERRIT_SITE}/plugins/delete-project.jar
+  gosu ${GERRIT_USER} cp -f ${GERRIT_HOME}/events-log.jar ${GERRIT_SITE}/plugins/events-log.jar
 
   if [ -e ${GERRIT_PUBLIC_KEYS_PATH}/id_${GERRIT_ADMIN_USER}_rsa.pub ]; then
     # Ensure this plugin is not setup when admin user is already deployed
@@ -53,15 +53,16 @@ if [ "$1" = "/gerrit-start.sh" ]; then
 
   # Install the Bouncy Castle
   [ ! -d ${GERRIT_SITE}/lib ] && mkdir ${GERRIT_SITE}/lib && chown -R ${GERRIT_USER} "${GERRIT_SITE}/lib"
-  cp -f ${GERRIT_HOME}/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
-  cp -f ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
+  gosu ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
+  gosu ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
 
   # Provide a way to customise this image
   echo
   for f in /docker-entrypoint-init.d/*; do
     case "$f" in
-      *.sh)  echo "$0: running $f"; . "$f" ;;
-      *)     echo "$0: ignoring $f" ;;
+      *.sh)    echo "$0: running $f"; source "$f" ;;
+      *.nohup) echo "$0: running $f"; nohup  "$f" & ;;
+      *)       echo "$0: ignoring $f" ;;
     esac
     echo
   done
@@ -70,6 +71,10 @@ if [ "$1" = "/gerrit-start.sh" ]; then
 
   #Section gerrit
   [ -z "${WEBURL}" ] || set_gerrit_config gerrit.canonicalWebUrl "${WEBURL}"
+  [ -z "${GITHTTPURL}" ] || set_gerrit_config gerrit.gitHttpUrl "${GITHTTPURL}"
+
+  #Section sshd
+  [ -z "${LISTEN_ADDR}" ] || set_gerrit_config sshd.listenAddress "${LISTEN_ADDR}"
 
   #Section database
   if [ "${DATABASE_TYPE}" = 'postgresql' ]; then
@@ -91,11 +96,16 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ -z "${DB_ENV_MYSQL_PASSWORD}" ] || set_secure_config database.password "${DB_ENV_MYSQL_PASSWORD}"
   fi
 
+  #Section auth
+  [ -z "${AUTH_TYPE}" ]           || set_gerrit_config auth.type "${AUTH_TYPE}"
+  [ -z "${AUTH_HTTP_HEADER}" ]    || set_gerrit_config auth.httpHeader "${AUTH_HTTP_HEADER}"
+  [ -z "${AUTH_EMAIL_FORMAT}" ]   || set_gerrit_config auth.emailFormat "${AUTH_EMAIL_FORMAT}"
+  [ -z "${AUTH_GIT_BASIC_AUTH}" ] || set_gerrit_config auth.gitBasicAuth "${AUTH_GIT_BASIC_AUTH}"
+
   #Section ldap
-  if [ "${AUTH_TYPE}" = 'LDAP' ] || [ "${AUTH_TYPE}" = 'LDAP_BIND' ] ; then
-    set_gerrit_config auth.type "${AUTH_TYPE}"
-    set_gerrit_config auth.gitBasicAuth true
-    [ -z "${LDAP_SERVER}" ]                   || set_gerrit_config ldap.server "ldap://${LDAP_SERVER}"
+  if [ "${AUTH_TYPE}" = 'LDAP' ] || [ "${AUTH_TYPE}" = 'LDAP_BIND' ] || [ "${AUTH_TYPE}" = 'HTTP_LDAP' ]; then
+    [ -z "${AUTH_GIT_BASIC_AUTH}" ]           && set_gerrit_config auth.gitBasicAuth true
+    [ -z "${LDAP_SERVER}" ]                   || set_gerrit_config ldap.server "${LDAP_SERVER}"
     [ -z "${LDAP_SSLVERIFY}" ]                || set_gerrit_config ldap.sslVerify "${LDAP_SSLVERIFY}"
     [ -z "${LDAP_GROUPSVISIBLETOALL}" ]       || set_gerrit_config ldap.groupsVisibleToAll "${LDAP_GROUPSVISIBLETOALL}"
     [ -z "${LDAP_USERNAME}" ]                 || set_gerrit_config ldap.username "${LDAP_USERNAME}"
@@ -121,10 +131,9 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ -z "${LDAP_CONNECTTIMEOUT}" ]           || set_gerrit_config ldap.connectTimeout "${LDAP_CONNECTTIMEOUT}"
   fi
 
-  # section OAUTH general
+  #Section OAUTH general
   if [ "${AUTH_TYPE}" = 'OAUTH' ]  ; then
-    cp -f ${GERRIT_HOME}/gerrit-oauth-provider.jar ${GERRIT_SITE}/plugins/gerrit-oauth-provider.jar
-    set_gerrit_config auth.type "${AUTH_TYPE}"
+    gosu ${GERRIT_USER} cp -f ${GERRIT_HOME}/gerrit-oauth-provider.jar ${GERRIT_SITE}/plugins/gerrit-oauth-provider.jar
     [ -z "${OAUTH_ALLOW_EDIT_FULL_NAME}" ]     || set_gerrit_config oauth.allowEditFullName "${OAUTH_ALLOW_EDIT_FULL_NAME}"
     [ -z "${OAUTH_ALLOW_REGISTER_NEW_EMAIL}" ] || set_gerrit_config oauth.allowRegisterNewEmail "${OAUTH_ALLOW_REGISTER_NEW_EMAIL}"
 
@@ -139,12 +148,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ -z "${OAUTH_GITHUB_CLIENT_SECRET}" ]     || set_gerrit_config plugin.gerrit-oauth-provider-github-oauth.client-secret "${OAUTH_GITHUB_CLIENT_SECRET}"
   fi
 
-  # section DEVELOPMENT_BECOME_ANY_ACCOUNT
-  if [ "${AUTH_TYPE}" = 'DEVELOPMENT_BECOME_ANY_ACCOUNT' ]  ; then
-    set_gerrit_config auth.type "${AUTH_TYPE}"
-  fi
-
-  # section container
+  #Section container
   [ -z "${JAVA_HEAPLIMIT}" ] || set_gerrit_config container.heapLimit "${JAVA_HEAPLIMIT}"
   [ -z "${JAVA_OPTIONS}" ]   || set_gerrit_config container.javaOptions "${JAVA_OPTIONS}"
   [ -z "${JAVA_SLAVE}" ]     || set_gerrit_config container.slave "${JAVA_SLAVE}"
@@ -163,7 +167,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ -z "${SMTP_SERVER_PORT}" ] || set_gerrit_config sendemail.smtpServerPort "${SMTP_SERVER_PORT}"
     [ -z "${SMTP_USER}" ]        || set_gerrit_config sendemail.smtpUser "${SMTP_USER}"
     [ -z "${SMTP_PASS}" ]        || set_secure_config sendemail.smtpPass "${SMTP_PASS}"
-    [ -z "${SMTP_ENCRYPTION}" ]      || set_gerrit_config sendemail.sendemail.smtpEncryption "${SMTP_ENCRYPTION}"
+    [ -z "${SMTP_ENCRYPTION}" ]      || set_gerrit_config sendemail.smtpEncryption "${SMTP_ENCRYPTION}"
     [ -z "${SMTP_CONNECT_TIMEOUT}" ] || set_gerrit_config sendemail.connectTimeout "${SMTP_CONNECT_TIMEOUT}"
     [ -z "${SMTP_FROM}" ]            || set_gerrit_config sendemail.from "${SMTP_FROM}"
   fi
