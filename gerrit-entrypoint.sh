@@ -30,7 +30,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
 
   if [ -z "$(ls -A "$GERRIT_SITE")" ]; then
     echo "First time initialize gerrit..."
-    gosu ${GERRIT_USER} java -jar "${GERRIT_WAR}" init --batch --no-auto-start -d "${GERRIT_SITE}" ${GERRIT_INIT_ARGS}
+    gosu ${GERRIT_USER} java ${JAVA_OPTS} -jar "${GERRIT_WAR}" init --batch --no-auto-start -d "${GERRIT_SITE}" ${GERRIT_INIT_ARGS}
     #All git repositories must be removed when database is set as postgres or mysql
     #in order to be recreated at the secondary init below.
     #Or an execption will be thrown on secondary init.
@@ -190,13 +190,13 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   set_gerrit_config gitweb.cgi "/usr/share/gitweb/gitweb.cgi"
 
   echo "Upgrading gerrit..."
-  gosu ${GERRIT_USER} java -jar "${GERRIT_WAR}" init --batch -d "${GERRIT_SITE}" ${GERRIT_INIT_ARGS}
+  gosu ${GERRIT_USER} java ${JAVA_OPTS} -jar "${GERRIT_WAR}" init --batch -d "${GERRIT_SITE}" ${GERRIT_INIT_ARGS}
   if [ $? -eq 0 ]; then
     echo "Upgrading is OK."
   else
     echo "Something wrong..."
     cat "${GERRIT_SITE}/logs/error_log"
   fi
-  gosu ${GERRIT_USER} java -jar "${GERRIT_WAR}" reindex -d "${GERRIT_SITE}"
+  gosu ${GERRIT_USER} java ${JAVA_OPTS} -jar "${GERRIT_WAR}" reindex -d "${GERRIT_SITE}"
 fi
 exec "$@"
