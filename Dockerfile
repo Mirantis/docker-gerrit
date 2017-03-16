@@ -86,6 +86,9 @@ RUN gosu ${GERRIT_USER} mkdir -p $GERRIT_SITE
 #can be persisted and survive image upgrades.
 VOLUME $GERRIT_SITE
 
+#Copy custom gerrit theme css
+COPY GerritSite.css /tmp/
+
 ENTRYPOINT ["/gerrit-entrypoint.sh"]
 
 EXPOSE 8080 29418
