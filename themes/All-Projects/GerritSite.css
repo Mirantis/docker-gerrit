@@ -54,7 +54,7 @@ a {
 .gerritBody a:hover,
 #gerrit_btmmenu a:hover,
 .popupContent a:hover {
-	color: #17A3C1;	
+	color: #17A3C1;
 	text-decoration: none;
 }
 input[type="text"] {
@@ -96,7 +96,7 @@ button {
 	/*margin-top: 16px;*/
   border-bottom: 1px solid #ccc;
   padding: 8px 20px 8px 20px;
-  background: url("http://apt.tcpcloud.eu/images/static/img/mirantis-logo.png"), url("http://apt.tcpcloud.eu/images/static/img/universe.jpg");
+  background: url("static/mirantis-logo.png"), url("static/universe.jpg");
   background-repeat: no-repeat;
   background-position: 90px 22px, -1px -0px;
   background-size: auto 17px, 100% 56px;
@@ -104,7 +104,7 @@ button {
 box-shadow: 0 1px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
 }
 
-.gwt-TabBar { 
+.gwt-TabBar {
 	margin-left: 250px!important;
 }
 
@@ -113,7 +113,7 @@ box-shadow: 0 1px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
 	padding-bottom: 12px!important;
 	font-size: 16px;
 	font-weight: normal;!important;
-	color: #fff;	
+	color: #fff;
 }
 .gerritTopMenu .gwt-TabBar .gwt-TabBarItem:hover {
 	color: #ddd;

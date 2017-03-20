@@ -73,6 +73,10 @@ RUN wget \
     ${BOUNCY_CASTLE_URL}/bcpkix-jdk15on/${BOUNCY_CASTLE_VERSION}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar \
     -O ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
 
+# Copy custom gerrit themes
+COPY themes $GERRIT_HOME/themes
+COPY static $GERRIT_HOME/static
+
 # Ensure the entrypoint scripts are in a fixed location
 COPY gerrit-entrypoint.sh /
 COPY gerrit-start.sh /
@@ -85,9 +89,6 @@ RUN gosu ${GERRIT_USER} mkdir -p $GERRIT_SITE
 #Gerrit site directory is a volume, so configuration and repositories
 #can be persisted and survive image upgrades.
 VOLUME $GERRIT_SITE
-
-#Copy custom gerrit theme css
-COPY GerritSite.css /tmp/
 
 ENTRYPOINT ["/gerrit-entrypoint.sh"]
 

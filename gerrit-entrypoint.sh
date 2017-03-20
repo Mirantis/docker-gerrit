@@ -37,6 +37,10 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ ${#DATABASE_TYPE} -gt 0 ] && rm -rf "${GERRIT_SITE}/git"
   fi
 
+  # Install themes
+  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
+  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static/* ${GERRIT_SITE}/static/
+
   # Install external plugins
   [ ! -d ${GERRIT_SITE}/plugins ] && mkdir ${GERRIT_SITE}/plugins && chown -R ${GERRIT_USER} "${GERRIT_SITE}/plugins"
   gosu ${GERRIT_USER} cp -f ${GERRIT_HOME}/delete-project.jar ${GERRIT_SITE}/plugins/delete-project.jar
@@ -95,9 +99,6 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ -z "${DB_ENV_MYSQL_USER}" ]     || set_gerrit_config database.username "${DB_ENV_MYSQL_USER}"
     [ -z "${DB_ENV_MYSQL_PASSWORD}" ] || set_secure_config database.password "${DB_ENV_MYSQL_PASSWORD}"
   fi
-
-  #Mirantis theme
-  mv /tmp/GerritSite.css ${GERRIT_SITE}/etc/
 
   #Section auth
   [ -z "${AUTH_TYPE}" ]           || set_gerrit_config auth.type "${AUTH_TYPE}"
