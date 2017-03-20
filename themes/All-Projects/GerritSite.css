@@ -158,7 +158,10 @@ box-shadow: 0 1px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
 	background-color: #b5dff0;
 }
 .gerritTopMenu .linkMenuBar {
-	font-size: 13px;
+	font-size: 10pt;
+}
+.gerritTopMenu .linkMenuBar .menuBarUserNamePanel {
+	color: white;
 }
 .gerritTopMenu .topmenuMenuLeft .menuItem {
 	display: inline-block;
