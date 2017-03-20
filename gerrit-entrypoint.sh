@@ -20,6 +20,11 @@ set_secure_config() {
   gosu ${GERRIT_USER} git config -f "${GERRIT_SITE}/etc/secure.config" "$@"
 }
 
+# If we are using MySQL database, check if it's ready or fail
+if [ "${DATABASE_TYPE}" = 'mysql' ]; then
+  mysql -sss -h${DB_PORT_3306_TCP_ADDR:-127.0.0.1} -P${DB_PORT_3306_TCP_PORT:-3306} -u${DB_ENV_MYSQL_USER:-gerrit} -p${DB_ENV_MYSQL_PASSWORD} ${DB_ENV_MYSQL_DB:-gerrit} -e"SELECT 'Successfully connected to MySQL database on ${DB_PORT_3306_TCP_ADDR:-127.0.0.1}:${DB_PORT_3306_TCP_PORT:-3306}';"
+fi
+
 #Initialize gerrit if gerrit site dir is empty.
 #This is necessary when gerrit site is in a volume.
 if [ "$1" = "/gerrit-start.sh" ]; then
@@ -39,6 +44,8 @@ if [ "$1" = "/gerrit-start.sh" ]; then
 
   # Install themes
   gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
+  # XXX: set All-Projects theme globally (should not be needed but is in 2.12)
+  [ ! -d ${GERRIT_HOME}/themes/All-Projects ] || cp -f ${GERRIT_HOME}/themes/All-Projects/* ${GERRIT_SITE}/etc/
   gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static/* ${GERRIT_SITE}/static/
 
   # Install external plugins
