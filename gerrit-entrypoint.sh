@@ -47,7 +47,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
 
   [ -d ${GERRIT_SITE}/static ] || gosu ${GERRIT_USER} mkdir ${GERRIT_SITE}/static
-  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static ${GERRIT_SITE}/static/
+  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static/* ${GERRIT_SITE}/static/
 
   # XXX: set All-Projects theme globally (should not be needed but is in 2.12)
   [ ! -d ${GERRIT_HOME}/themes/All-Projects ] || cp -f ${GERRIT_HOME}/themes/All-Projects/* ${GERRIT_SITE}/etc/
