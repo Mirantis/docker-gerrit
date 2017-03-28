@@ -22,7 +22,10 @@ set_secure_config() {
 
 # If we are using MySQL database, check if it's ready or fail
 if [ "${DATABASE_TYPE}" = 'mysql' ]; then
-  mysql -sss -h${DB_PORT_3306_TCP_ADDR:-127.0.0.1} -P${DB_PORT_3306_TCP_PORT:-3306} -u${DB_ENV_MYSQL_USER:-gerrit} -p${DB_ENV_MYSQL_PASSWORD} ${DB_ENV_MYSQL_DB:-gerrit} -e"SELECT 'Successfully connected to MySQL database on ${DB_PORT_3306_TCP_ADDR:-127.0.0.1}:${DB_PORT_3306_TCP_PORT:-3306}';"
+  while true; do
+    echo "Trying to connect to MySQL database on ${DB_PORT_3306_TCP_ADDR:-127.0.0.1}:${DB_PORT_3306_TCP_PORT:-3306}.."
+    mysql -sss -h${DB_PORT_3306_TCP_ADDR:-127.0.0.1} -P${DB_PORT_3306_TCP_PORT:-3306} -u${DB_ENV_MYSQL_USER:-gerrit} -p${DB_ENV_MYSQL_PASSWORD} ${DB_ENV_MYSQL_DB:-gerrit} -e"SELECT 'Successfully connected to MySQL database on ${DB_PORT_3306_TCP_ADDR:-127.0.0.1}:${DB_PORT_3306_TCP_PORT:-3306}';" && break || sleep 5
+  done
 fi
 
 #Initialize gerrit if gerrit site dir is empty.
@@ -169,7 +172,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   [ -z "${JAVA_SLAVE}" ]     || set_gerrit_config container.slave "${JAVA_SLAVE}"
 
   # Section capability
-  [-z "${CAPABILITY_ADMINISTRATESERVER}" ] || set_gerrit_config capability.administrateServer "${CAPABILITY_ADMINISTRATESERVER:-admin}"
+  [ -z "${CAPABILITY_ADMINISTRATESERVER}" ] || set_gerrit_config capability.administrateServer "${CAPABILITY_ADMINISTRATESERVER:-admin}"
 
   #Section sendemail
   if [ -z "${SMTP_SERVER}" ]; then
