@@ -14,7 +14,24 @@ ENV GERRIT_INIT_ARGS ""
 RUN adduser -D -h "${GERRIT_HOME}" -g "Gerrit User" -s /sbin/nologin "${GERRIT_USER}"
 
 RUN set -x \
-    && apk add --update --no-cache git openssh openssl bash perl perl-cgi git-gitweb curl su-exec
+    && apk add --update --no-cache git openssh openssl bash perl perl-cgi git-gitweb curl su-exec mysql-client
+
+# Grab gosu for easy step-down from root
+ENV GOSU_VERSION 1.9
+RUN set -x \
+    && apk add --no-cache --virtual .gosu-deps \
+        dpkg \
+        gnupg \
+    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture | sed s/musl-linux-//)" \
+    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture  | sed s/musl-linux-//).asc" \
+    && export GNUPGHOME="$(mktemp -d)" \
+    && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
+    && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
+    && rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc \
+    && chmod +x /usr/local/bin/gosu \
+    && gosu nobody true \
+    && apk del .gosu-deps
+>>>>>>> 2.12.7
 
 RUN mkdir /docker-entrypoint-init.d
 
@@ -32,6 +49,8 @@ ENV GERRITFORGE_ARTIFACT_DIR=lastSuccessfulBuild/artifact/buck-out/gen/plugins
 RUN curl -fSsL \
     ${GERRITFORGE_URL}/job/plugin-delete-project-${PLUGIN_VERSION}/${GERRITFORGE_ARTIFACT_DIR}/delete-project/delete-project.jar \
     -o ${GERRIT_HOME}/delete-project.jar
+
+COPY add-user-plugin-2.11.3.jar $GERRIT_HOME/add-user-plugin.jar
 
 #events-log
 #This plugin is required by gerrit-trigger plugin of Jenkins.
@@ -62,6 +81,10 @@ RUN curl -fSsL \
 RUN curl -fSsL \
     ${BOUNCY_CASTLE_URL}/bcpkix-jdk15on/${BOUNCY_CASTLE_VERSION}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar \
     -o ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
+
+# Copy custom gerrit themes
+COPY themes $GERRIT_HOME/themes
+COPY static $GERRIT_HOME/static
 
 # Ensure the entrypoint scripts are in a fixed location
 COPY gerrit-entrypoint.sh /

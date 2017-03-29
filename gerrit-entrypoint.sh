@@ -1,6 +1,17 @@
 #!/usr/bin/env sh
 set -e
 
+export GERRIT_ADMIN_USER=${GERRIT_ADMIN_USER:-"admin"}
+export GERRIT_ADMIN_FULLNAME=${GERRIT_ADMIN_FULLNAME:-"Administrator"}
+export GERRIT_ADMIN_EMAIL=${GERRIT_ADMIN_EMAIL:-"admin@localhost"}
+export GERRIT_ADMIN_PWD=${GERRIT_ADMIN_PWD:-'password'}
+if [ "x$GERRIT_ADMIN_SSH_PUBLIC" == "x" ]; then
+  echo "GERRIT_ADMIN_SSH_PUBLIC environment variable must be set!" 1>&2
+  exit 1
+fi
+#export GERRIT_ACCOUNTS=${GERRIT_ACCOUNTS:-"jenkins,jenkins,jenkins@localhost,${GERRIT_ADMIN_PWD},Non-Interactive Users:Administrators;sonar,sonar,sonar@localhost,${GERRIT_ADMIN_PWD},Non-Interactive Users"}
+export GERRIT_PUBLIC_KEYS_PATH=${GERRIT_PUBLIC_KEYS_PATH:-"${GERRIT_SITE}/etc/ssh-keys"}
+
 set_gerrit_config() {
   su-exec ${GERRIT_USER} git config -f "${GERRIT_SITE}/etc/gerrit.config" "$@"
 }
@@ -13,9 +24,18 @@ if [ -n "${JAVA_HEAPLIMIT}" ]; then
   JAVA_MEM_OPTIONS="-Xmx${JAVA_HEAPLIMIT}"
 fi
 
+# If we are using MySQL database, check if it's ready or fail
+if [ "${DATABASE_TYPE}" = 'mysql' ]; then
+  while true; do
+    echo "Trying to connect to MySQL database on ${DB_PORT_3306_TCP_ADDR:-127.0.0.1}:${DB_PORT_3306_TCP_PORT:-3306}.."
+    mysql -sss -h${DB_PORT_3306_TCP_ADDR:-127.0.0.1} -P${DB_PORT_3306_TCP_PORT:-3306} -u${DB_ENV_MYSQL_USER:-gerrit} -p${DB_ENV_MYSQL_PASSWORD} ${DB_ENV_MYSQL_DB:-gerrit} -e"SELECT 'Successfully connected to MySQL database on ${DB_PORT_3306_TCP_ADDR:-127.0.0.1}:${DB_PORT_3306_TCP_PORT:-3306}';" && break || sleep 5
+  done
+fi
+
 if [ "$1" = "/gerrit-start.sh" ]; then
   # If you're mounting ${GERRIT_SITE} to your host, you this will default to root.
   # This obviously ensures the permissions are set correctly for when gerrit starts.
+  [ ! -d ${GERRIT_SITE}/etc ] && mkdir ${GERRIT_SITE}/etc
   chown -R ${GERRIT_USER} "${GERRIT_SITE}"
 
   # Initialize Gerrit if ${GERRIT_SITE} is empty.
@@ -28,11 +48,32 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ ${#DATABASE_TYPE} -gt 0 ] && rm -rf "${GERRIT_SITE}/git"
   fi
 
+  # Install themes
+  [ -d ${GERRIT_SITE}/themes ] || gosu ${GERRIT_USER} mkdir ${GERRIT_SITE}/themes
+  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
+
+  [ -d ${GERRIT_SITE}/static ] || gosu ${GERRIT_USER} mkdir ${GERRIT_SITE}/static
+  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static/* ${GERRIT_SITE}/static/
+
+  # XXX: set All-Projects theme globally (should not be needed but is in 2.12)
+  [ ! -d ${GERRIT_HOME}/themes/All-Projects ] || cp -f ${GERRIT_HOME}/themes/All-Projects/* ${GERRIT_SITE}/etc/
+
   # Install external plugins
+  [ ! -d ${GERRIT_SITE}/plugins ] && mkdir ${GERRIT_SITE}/plugins && chown -R ${GERRIT_USER} "${GERRIT_SITE}/plugins"
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/delete-project.jar ${GERRIT_SITE}/plugins/delete-project.jar
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/events-log.jar ${GERRIT_SITE}/plugins/events-log.jar
 
+  if [ -e ${GERRIT_PUBLIC_KEYS_PATH}/id_${GERRIT_ADMIN_USER}_rsa.pub ]; then
+    # Ensure this plugin is not setup when admin user is already deployed
+    rm -f ${GERRIT_SITE}/plugins/add-user-plugin.jar || true
+  else
+    cp -f ${GERRIT_HOME}/add-user-plugin.jar ${GERRIT_SITE}/plugins/add-user-plugin.jar
+    [ ! -d ${GERRIT_PUBLIC_KEYS_PATH} ] && mkdir -p ${GERRIT_PUBLIC_KEYS_PATH}
+    echo "$GERRIT_ADMIN_SSH_PUBLIC" > ${GERRIT_PUBLIC_KEYS_PATH}/id_${GERRIT_ADMIN_USER}_rsa.pub
+  fi
+
   # Install the Bouncy Castle
+  [ ! -d ${GERRIT_SITE}/lib ] && mkdir ${GERRIT_SITE}/lib && chown -R ${GERRIT_USER} "${GERRIT_SITE}/lib"
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
 
@@ -94,7 +135,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ -z "${LDAP_READTIMEOUT}" ]              || set_gerrit_config ldap.readTimeout "${LDAP_READTIMEOUT}"
     [ -z "${LDAP_ACCOUNTBASE}" ]              || set_gerrit_config ldap.accountBase "${LDAP_ACCOUNTBASE}"
     [ -z "${LDAP_ACCOUNTSCOPE}" ]             || set_gerrit_config ldap.accountScope "${LDAP_ACCOUNTSCOPE}"
-    [ -z "${LDAP_ACCOUNTPATTERN}" ]           || set_gerrit_config ldap.accountPattern "${LDAP_ACCOUNTPATTERN}"
+    [ -z "${LDAP_ACCOUNTPATTERN}" ]           || set_gerrit_config ldap.accountPattern "$(echo ${LDAP_ACCOUNTPATTERN} | sed -E 's,\{username\},\$\{username\},g')"
     [ -z "${LDAP_ACCOUNTFULLNAME}" ]          || set_gerrit_config ldap.accountFullName "${LDAP_ACCOUNTFULLNAME}"
     [ -z "${LDAP_ACCOUNTEMAILADDRESS}" ]      || set_gerrit_config ldap.accountEmailAddress "${LDAP_ACCOUNTEMAILADDRESS}"
     [ -z "${LDAP_ACCOUNTSSHUSERNAME}" ]       || set_gerrit_config ldap.accountSshUserName "${LDAP_ACCOUNTSSHUSERNAME}"
@@ -132,6 +173,9 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   [ -z "${JAVA_HEAPLIMIT}" ] || set_gerrit_config container.heapLimit "${JAVA_HEAPLIMIT}"
   [ -z "${JAVA_OPTIONS}" ]   || set_gerrit_config container.javaOptions "${JAVA_OPTIONS}"
   [ -z "${JAVA_SLAVE}" ]     || set_gerrit_config container.slave "${JAVA_SLAVE}"
+
+  # Section capability
+  [ -z "${CAPABILITY_ADMINISTRATESERVER}" ] || set_gerrit_config capability.administrateServer "${CAPABILITY_ADMINISTRATESERVER:-admin}"
 
   #Section sendemail
   if [ -z "${SMTP_SERVER}" ]; then
@@ -186,5 +230,6 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     echo "Something wrong..."
     cat "${GERRIT_SITE}/logs/error_log"
   fi
+  gosu ${GERRIT_USER} java ${JAVA_OPTS} -jar "${GERRIT_WAR}" reindex -d "${GERRIT_SITE}"
 fi
 exec "$@"
