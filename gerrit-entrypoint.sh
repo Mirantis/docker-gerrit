@@ -84,6 +84,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   #Section gerrit
   [ -z "${WEBURL}" ] || set_gerrit_config gerrit.canonicalWebUrl "${WEBURL}"
   [ -z "${GITHTTPURL}" ] || set_gerrit_config gerrit.gitHttpUrl "${GITHTTPURL}"
+  [ -z "${CANLOADINIFRAME}" ] || set_gerrit_config gerrit.canLoadInIframe "${CANLOADINIFRAME}"
 
   #Section sshd
   [ -z "${LISTEN_ADDR}" ] || set_gerrit_config sshd.listenAddress "${LISTEN_ADDR}"
