@@ -1,17 +1,6 @@
 #!/usr/bin/env sh
 set -e
 
-export GERRIT_ADMIN_USER=${GERRIT_ADMIN_USER:-"admin"}
-export GERRIT_ADMIN_FULLNAME=${GERRIT_ADMIN_FULLNAME:-"Administrator"}
-export GERRIT_ADMIN_EMAIL=${GERRIT_ADMIN_EMAIL:-"admin@localhost"}
-export GERRIT_ADMIN_PWD=${GERRIT_ADMIN_PWD:-'password'}
-if [ "x$GERRIT_ADMIN_SSH_PUBLIC" == "x" ]; then
-  echo "GERRIT_ADMIN_SSH_PUBLIC environment variable must be set!" 1>&2
-  exit 1
-fi
-#export GERRIT_ACCOUNTS=${GERRIT_ACCOUNTS:-"jenkins,jenkins,jenkins@localhost,${GERRIT_ADMIN_PWD},Non-Interactive Users:Administrators;sonar,sonar,sonar@localhost,${GERRIT_ADMIN_PWD},Non-Interactive Users"}
-export GERRIT_PUBLIC_KEYS_PATH=${GERRIT_PUBLIC_KEYS_PATH:-"${GERRIT_SITE}/etc/ssh-keys"}
-
 set_gerrit_config() {
   su-exec ${GERRIT_USER} git config -f "${GERRIT_SITE}/etc/gerrit.config" "$@"
 }
@@ -49,11 +38,11 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   fi
 
   # Install themes
-  [ -d ${GERRIT_SITE}/themes ] || gosu ${GERRIT_USER} mkdir ${GERRIT_SITE}/themes
-  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
+  [ -d ${GERRIT_SITE}/themes ] || su-exec ${GERRIT_USER} mkdir ${GERRIT_SITE}/themes
+  su-exec ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
 
-  [ -d ${GERRIT_SITE}/static ] || gosu ${GERRIT_USER} mkdir ${GERRIT_SITE}/static
-  gosu ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static/* ${GERRIT_SITE}/static/
+  [ -d ${GERRIT_SITE}/static ] || su-exec ${GERRIT_USER} mkdir ${GERRIT_SITE}/static
+  su-exec ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static/* ${GERRIT_SITE}/static/
 
   # XXX: set All-Projects theme globally (should not be needed but is in 2.12)
   [ ! -d ${GERRIT_HOME}/themes/All-Projects ] || cp -f ${GERRIT_HOME}/themes/All-Projects/* ${GERRIT_SITE}/etc/
@@ -166,9 +155,6 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   [ -z "${JAVA_OPTIONS}" ]   || set_gerrit_config container.javaOptions "${JAVA_OPTIONS}"
   [ -z "${JAVA_SLAVE}" ]     || set_gerrit_config container.slave "${JAVA_SLAVE}"
 
-  # Section capability
-  [ -z "${CAPABILITY_ADMINISTRATESERVER}" ] || set_gerrit_config capability.administrateServer "${CAPABILITY_ADMINISTRATESERVER:-admin}"
-
   #Section sendemail
   if [ -z "${SMTP_SERVER}" ]; then
     set_gerrit_config sendemail.enable false
@@ -222,6 +208,6 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     echo "Something wrong..."
     cat "${GERRIT_SITE}/logs/error_log"
   fi
-  gosu ${GERRIT_USER} java ${JAVA_OPTS} -jar "${GERRIT_WAR}" reindex -d "${GERRIT_SITE}"
+  su-exec ${GERRIT_USER} java ${JAVA_OPTS} -jar "${GERRIT_WAR}" reindex -d "${GERRIT_SITE}"
 fi
 exec "$@"
