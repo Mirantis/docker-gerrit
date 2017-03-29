@@ -31,7 +31,6 @@ RUN set -x \
     && chmod +x /usr/local/bin/gosu \
     && gosu nobody true \
     && apk del .gosu-deps
->>>>>>> 2.12.7
 
 RUN mkdir /docker-entrypoint-init.d
 
@@ -49,8 +48,6 @@ ENV GERRITFORGE_ARTIFACT_DIR=lastSuccessfulBuild/artifact/buck-out/gen/plugins
 RUN curl -fSsL \
     ${GERRITFORGE_URL}/job/plugin-delete-project-${PLUGIN_VERSION}/${GERRITFORGE_ARTIFACT_DIR}/delete-project/delete-project.jar \
     -o ${GERRIT_HOME}/delete-project.jar
-
-COPY add-user-plugin-2.11.3.jar $GERRIT_HOME/add-user-plugin.jar
 
 #events-log
 #This plugin is required by gerrit-trigger plugin of Jenkins.

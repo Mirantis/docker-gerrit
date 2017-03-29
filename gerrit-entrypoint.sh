@@ -63,15 +63,6 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/delete-project.jar ${GERRIT_SITE}/plugins/delete-project.jar
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/events-log.jar ${GERRIT_SITE}/plugins/events-log.jar
 
-  if [ -e ${GERRIT_PUBLIC_KEYS_PATH}/id_${GERRIT_ADMIN_USER}_rsa.pub ]; then
-    # Ensure this plugin is not setup when admin user is already deployed
-    rm -f ${GERRIT_SITE}/plugins/add-user-plugin.jar || true
-  else
-    cp -f ${GERRIT_HOME}/add-user-plugin.jar ${GERRIT_SITE}/plugins/add-user-plugin.jar
-    [ ! -d ${GERRIT_PUBLIC_KEYS_PATH} ] && mkdir -p ${GERRIT_PUBLIC_KEYS_PATH}
-    echo "$GERRIT_ADMIN_SSH_PUBLIC" > ${GERRIT_PUBLIC_KEYS_PATH}/id_${GERRIT_ADMIN_USER}_rsa.pub
-  fi
-
   # Install the Bouncy Castle
   [ ! -d ${GERRIT_SITE}/lib ] && mkdir ${GERRIT_SITE}/lib && chown -R ${GERRIT_USER} "${GERRIT_SITE}/lib"
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
