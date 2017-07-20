@@ -33,6 +33,11 @@ RUN curl -fSsL \
     ${GERRITFORGE_URL}/job/plugin-delete-project-${PLUGIN_VERSION}/${GERRITFORGE_ARTIFACT_DIR}/delete-project/delete-project.jar \
     -o ${GERRIT_HOME}/delete-project.jar
 
+#download-commands
+RUN curl -fSsL \
+     ${GERRITFORGE_URL}/job/plugin-project-download-commands-${PLUGIN_VERSION}/${GERRITFORGE_ARTIFACT_DIR}/project-download-commands/project-download-commands.jar \
+     -o ${GERRIT_HOME}/project-download-commands.jar
+
 #events-log
 #This plugin is required by gerrit-trigger plugin of Jenkins.
 RUN curl -fSsL \
