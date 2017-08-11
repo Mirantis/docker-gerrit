@@ -23,10 +23,6 @@ body,
 :focus {
 	outline: 0;
 }
-input:not([type="checkbox"]),
-textarea {
-	-moz-appearance: none;
-}
 a {
 	transition: background 0.1s linear 0s, color 0.1s linear 0s;
 }
