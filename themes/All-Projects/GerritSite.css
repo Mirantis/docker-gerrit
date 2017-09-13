@@ -267,7 +267,7 @@ box-shadow: 0 1px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
 	margin: 8px auto;
 }
 .gerritBody > div {
-	padding: 0 16px;
+	padding: 0 10px;
 }
 .gerritBody .screenHeader {
 	font-size: 16px;
@@ -630,7 +630,7 @@ box-shadow: 0 1px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
 	width: 100%;
 }
 .com-google-gerrit-client-change-Message_BinderImpl_GenCss_style-messageBox {
-	width: 100%;
+	width: 100% !important;
 	border-radius: 0 !important;
 	box-sizing: border-box;
 }
@@ -639,14 +639,16 @@ box-shadow: 0 1px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
 	height: auto !important;
 	padding: 15px 0;
 }
+.com-google-gerrit-client-change-FileTable-FileTableCss-table
 th.com-google-gerrit-client-change-FileTable-FileTableCss-deltaColumn1,
+.com-google-gerrit-client-change-FileTable-FileTableCss-table
 th.com-google-gerrit-client-change-FileTable-FileTableCss-deltaColumn2 {
 	text-align: right;
 	padding: 5px 10px;
 	background: transparent;
 }
 .com-google-gerrit-client-change-ChangeScreen_BinderImpl_GenCss_style-sectionHeader {
-	margin: 0;
+	margin: 0 !important;
 }
 .com-google-gerrit-client-change-Message_BinderImpl_GenCss_style-header {
 	height: 30px;
@@ -690,13 +692,13 @@ th.com-google-gerrit-client-change-FileTable-FileTableCss-deltaColumn2 {
 }
 .gwt-TabPanel.com-google-gerrit-client-change-RelatedChanges-RelatedChangesCss-tabPanel {
 	table-layout: fixed;
-	margin-left: -40px;
+	margin-left: 0px;
 	width: calc(100% + 40px);
 }
 @media (min-width: 1600px) {
 		.gwt-TabPanel.com-google-gerrit-client-change-RelatedChanges-RelatedChangesCss-tabPanel {
 		width: calc(100% + 100px);
-		margin-left: -100px;
+/*		margin-left: -100px; */
 	}
 }
 .gwt-TabPanel.com-google-gerrit-client-change-RelatedChanges-RelatedChangesCss-tabPanel .gwt-TabBarItem-wrapper {
@@ -884,6 +886,11 @@ button.com-google-gerrit-client-change-Reviewers_BinderImpl_GenCss_style-openAdd
 	padding-right: 19px;
 	font-size: 13px;
 }
+
+.com-google-gerrit-client-change-ChangeScreen_BinderImpl_GenCss_style-popdown button:nth-child(2) div {
+    width: 120px !important;
+}
+
 .com-google-gerrit-client-change-ChangeScreen_BinderImpl_GenCss_style-popdown button div::before {
 	content: '';
 	position: absolute;
@@ -896,7 +903,7 @@ button.com-google-gerrit-client-change-Reviewers_BinderImpl_GenCss_style-openAdd
 	top: 5px;
 }
 .com-google-gerrit-client-change-ChangeScreen_BinderImpl_GenCss_style-popdown button div::after {
-	content: '';
+	content: none !important;
 	position: absolute;
 	width: 0;
 	height: 0;
@@ -1085,7 +1092,7 @@ button.com-google-gerrit-client-change-Reviewers_BinderImpl_GenCss_style-openAdd
 	font-size: 14px;
 }
 .com-google-gerrit-client-diff-SideBySide_BinderImpl_GenCss_style-sbs {
-	position: absolute;
+	position: initial !important;
 	left: 20px;
 	right: 20px;
 	background: #fff;
@@ -1146,6 +1153,10 @@ button.com-google-gerrit-client-change-Reviewers_BinderImpl_GenCss_style-openAdd
 }
 .gerritTopMenu .topmenuMenuRight .menuItem{
         color:white;
+}
+
+.changeTable .dataCell.labelNotApplicable {
+        background: none !important;
 }
 
 @media screen and (max-width: 1280px){
