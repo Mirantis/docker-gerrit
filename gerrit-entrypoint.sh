@@ -58,6 +58,9 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
 
+  # Install mysql connector
+  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar ${GERRIT_SITE}/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar
+
   # Provide a way to customise this image
   echo
   for f in /docker-entrypoint-init.d/*; do

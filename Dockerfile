@@ -9,6 +9,7 @@ ENV GERRIT_WAR ${GERRIT_HOME}/gerrit.war
 ENV GERRIT_VERSION 2.13.6
 ENV GERRIT_USER gerrit2
 ENV GERRIT_INIT_ARGS ""
+ENV MYSQL_CONNECTOR_VERSION 5.1.21
 
 # Add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN adduser -D -h "${GERRIT_HOME}" -g "Gerrit User" -s /sbin/nologin "${GERRIT_USER}"
@@ -67,6 +68,11 @@ RUN curl -fSsL \
 RUN curl -fSsL \
     ${BOUNCY_CASTLE_URL}/bcpkix-jdk15on/${BOUNCY_CASTLE_VERSION}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar \
     -o ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
+
+#download mysql connector
+RUN curl -fSsL \
+    https://repo1.maven.org/maven2/mysql/mysql-connector-java/${MYSQL_CONNECTOR_VERSION}/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar \
+    -o ${GERRIT_HOME}/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar
 
 # Copy custom gerrit themes
 COPY themes $GERRIT_HOME/themes
