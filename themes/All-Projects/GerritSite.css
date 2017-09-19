@@ -1152,7 +1152,10 @@ button.com-google-gerrit-client-change-Reviewers_BinderImpl_GenCss_style-openAdd
 	padding-top: 5px;
 }
 .gerritTopMenu .topmenuMenuRight .menuItem{
-        color:white;
+    color:white;
+}
+.com-google-gerrit-client-diff-DraftBox_BinderImpl_GenCss_style-button div{
+     width: auto;
 }
 
 .changeTable .dataCell.labelNotApplicable {
@@ -1160,6 +1163,7 @@ button.com-google-gerrit-client-change-Reviewers_BinderImpl_GenCss_style-openAdd
 }
 
 @media screen and (max-width: 1280px){
+        .gerritTopMenu .topmenuMenuRight .menuBarUserNamePanel,
         .gerritTopMenu .topmenuMenuRight .menuItem{
         color: black;
         }
