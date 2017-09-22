@@ -25,7 +25,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   # If you're mounting ${GERRIT_SITE} to your host, you this will default to root.
   # This obviously ensures the permissions are set correctly for when gerrit starts.
   [ ! -d ${GERRIT_SITE}/etc ] && mkdir ${GERRIT_SITE}/etc
-  chown -R ${GERRIT_USER} "${GERRIT_SITE}"
+  find ${GERRIT_SITE} ! -user $(id -u ${GERRIT_USER}) -exec chown ${GERRIT_USER} {} \;
 
   # Initialize Gerrit if ${GERRIT_SITE} is empty.
   if [ -z "$(ls -A "$GERRIT_SITE")" ]; then
