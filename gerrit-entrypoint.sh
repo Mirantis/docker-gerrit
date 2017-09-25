@@ -202,6 +202,14 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   esac
   set_gerrit_config gitweb.type "$GITWEB_TYPE"
 
+  #Enable JIRA links
+  [ -z "${GERRIT_JIRA_URL}" ] || cat <<-EOF >> "${GERRIT_SITE}/etc/gerrit.config"
+[commentlink "jira"]
+  match = "[Pp][rR][oO][dD]:{1} *#?(\d+)"
+  link = "https://${GERRIT_JIRA_URL}/browse/PROD-$1"
+EOF
+
+
   echo "Upgrading gerrit..."
   su-exec ${GERRIT_USER} java ${JAVA_OPTIONS} ${JAVA_MEM_OPTIONS} -jar "${GERRIT_WAR}" init --batch -d "${GERRIT_SITE}" ${GERRIT_INIT_ARGS}
   if [ $? -eq 0 ]; then
