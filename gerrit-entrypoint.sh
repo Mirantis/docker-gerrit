@@ -37,6 +37,9 @@ if [ "$1" = "/gerrit-start.sh" ]; then
     [ ${#DATABASE_TYPE} -gt 0 ] && rm -rf "${GERRIT_SITE}/git"
   fi
 
+  # Change name of CI user, use separation "|" for several users
+  sed -i "s/CI_USER_NAME/${CI_USER_NAME:-mcp-jenkins}/g" ${GERRIT_HOME}/static/hideci.js
+
   # Install themes
   [ -d ${GERRIT_SITE}/themes ] || su-exec ${GERRIT_USER} mkdir ${GERRIT_SITE}/themes
   su-exec ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
