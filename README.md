@@ -190,3 +190,20 @@ before returning which will cause the container to exit soon after.
 ## Sync timezone with the host server. 
    `docker run -d -p 8080:8080 -p 29418:29418 -v /etc/localtime:/etc/localtime:ro openfrontier/gerrit`
 
+## Automatic reindex detection
+
+  The docker container automatically writes the current gerrit version into `${GERRIT_HOME}/review_site/gerrit_version`
+  in order to detect whether a full upgrade should be performed.
+  This check can be disabled via the `IGNORE_VERSIONCHECK` environment variable.
+
+  Note that for major version upgrades a full reindex might be necessary. Check the gerrit upgrade notes for details.
+  For large repositories, the full reindex can take 30min or more.
+
+  ```shell
+    docker run \
+        -e IGNORE_VERSIONCHECK=1 \
+        -v ~/gerrit_volume:/var/gerrit/review_site \
+        -p 8080:8080 \
+        -p 29418:29418 \
+        -d openfrontier/gerrit
+  ```
