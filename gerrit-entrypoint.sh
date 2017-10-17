@@ -206,10 +206,24 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   set_gerrit_config gitweb.type "$GITWEB_TYPE"
 
   #Enable JIRA links
+  #Delete sectionin gerrit.config to avoid duplicates
+  perl -i -pe 'undef $/; s/\[commentlink "jira"\]\n(\s[^\n]*\n)+//igs' "${GERRIT_SITE}/etc/gerrit.config"
+
   [ -z "${GERRIT_JIRA_URL}" ] || cat <<-EOF >> "${GERRIT_SITE}/etc/gerrit.config"
 [commentlink "jira"]
-  match = "[Pp][rR][oO][dD]:{1} *#?(\d+)"
-  link = "https://${GERRIT_JIRA_URL}/browse/PROD-$1"
+  match = "[Pp][rR][oO][dD]:{1} *#?(\\\d+)"
+  link = "https://${GERRIT_JIRA_URL}/browse/PROD-\$1"
+EOF
+
+  #Enable display table votes of CI
+  #Delete sectionin gerrit.config to avoid duplicates
+  perl -i -pe 'undef $/; s/\[commentlink "testresult"\]\n(\s[^\n]*\n)+//igs' "${GERRIT_SITE}/etc/gerrit.config"
+
+  cat <<-EOF >> "${GERRIT_SITE}/etc/gerrit.config"
+[commentlink "testresult"]
+  match = <li>([^ ]+) <a href=\"[^\"]+\" [^>]*>([^<]+)</a> : ([^ ]+)([^<]*)</li>
+  link = ""
+  html = "<li class=\"comment_test\"><span class=\"comment_test_name\"><a href=\"\$2\">\$1</a></span> <span class=\"comment_test_result\"><span class=\"result_\$3\">\$3</span>    \$4</span></li>"
 EOF
 
 
