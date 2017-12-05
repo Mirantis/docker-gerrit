@@ -57,6 +57,11 @@ RUN curl -fSsL \
     https://github.com/davido/gerrit-oauth-provider/releases/download/v${GERRIT_OAUTH_VERSION}/gerrit-oauth-provider.jar \
     -o ${GERRIT_HOME}/gerrit-oauth-provider.jar
 
+#replication
+RUN curl -fSsL \
+    ${GERRITFORGE_URL}/job/plugin-replication-${PLUGIN_VERSION}/${GERRITFORGE_ARTIFACT_DIR}/replication/replication.jar \
+    -o ${GERRIT_HOME}/replication.jar
+
 #download bouncy castle
 ENV BOUNCY_CASTLE_VERSION 1.52
 ENV BOUNCY_CASTLE_URL http://central.maven.org/maven2/org/bouncycastle
