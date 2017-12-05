@@ -55,6 +55,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/delete-project.jar ${GERRIT_SITE}/plugins/delete-project.jar
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/download-commands.jar ${GERRIT_SITE}/plugins/download-commands.jar
   su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/events-log.jar ${GERRIT_SITE}/plugins/events-log.jar
+  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/replication.jar ${GERRIT_SITE}/plugins/replication.jar
 
   # Install the Bouncy Castle
   [ ! -d ${GERRIT_SITE}/lib ] && mkdir ${GERRIT_SITE}/lib && chown -R ${GERRIT_USER} "${GERRIT_SITE}/lib"
