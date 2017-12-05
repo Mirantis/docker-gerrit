@@ -38,32 +38,10 @@ if [ "$1" = "/gerrit-start.sh" ]; then
   fi
 
   # Change name of CI user, use separation "|" for several users
-  sed -i "s/CI_USER_NAME/${CI_USER_NAME:-mcp-jenkins}/g" ${GERRIT_HOME}/static/hideci.js
-
-  # Install themes
-  [ -d ${GERRIT_SITE}/themes ] || su-exec ${GERRIT_USER} mkdir ${GERRIT_SITE}/themes
-  su-exec ${GERRIT_USER} cp -rf ${GERRIT_HOME}/themes/* ${GERRIT_SITE}/themes/
-
-  [ -d ${GERRIT_SITE}/static ] || su-exec ${GERRIT_USER} mkdir ${GERRIT_SITE}/static
-  su-exec ${GERRIT_USER} cp -rf ${GERRIT_HOME}/static/* ${GERRIT_SITE}/static/
+  sed -i "s/CI_USER_NAME/${CI_USER_NAME:-mcp-jenkins}/g" ${GERRIT_SITE}/static/hideci.js
 
   # XXX: set All-Projects theme globally (should not be needed but is in 2.12)
   [ ! -d ${GERRIT_HOME}/themes/All-Projects ] || cp -f ${GERRIT_HOME}/themes/All-Projects/* ${GERRIT_SITE}/etc/
-
-  # Install external plugins
-  [ ! -d ${GERRIT_SITE}/plugins ] && mkdir ${GERRIT_SITE}/plugins && chown -R ${GERRIT_USER} "${GERRIT_SITE}/plugins"
-  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/delete-project.jar ${GERRIT_SITE}/plugins/delete-project.jar
-  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/download-commands.jar ${GERRIT_SITE}/plugins/download-commands.jar
-  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/events-log.jar ${GERRIT_SITE}/plugins/events-log.jar
-  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/replication.jar ${GERRIT_SITE}/plugins/replication.jar
-
-  # Install the Bouncy Castle
-  [ ! -d ${GERRIT_SITE}/lib ] && mkdir ${GERRIT_SITE}/lib && chown -R ${GERRIT_USER} "${GERRIT_SITE}/lib"
-  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcprov-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
-  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar ${GERRIT_SITE}/lib/bcpkix-jdk15on-${BOUNCY_CASTLE_VERSION}.jar
-
-  # Install mysql connector
-  su-exec ${GERRIT_USER} cp -f ${GERRIT_HOME}/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar ${GERRIT_SITE}/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar
 
   # Provide a way to customise this image
   echo
