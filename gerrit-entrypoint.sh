@@ -85,6 +85,7 @@ if [ "$1" = "/gerrit-start.sh" ]; then
 
   #Section sshd
   [ -z "${LISTEN_ADDR}" ] || set_gerrit_config sshd.listenAddress "${LISTEN_ADDR}"
+  [ -z "${MAX_CONNECTIONS_PER_USER}" ] || set_gerrit_config sshd.maxConnectionsPerUser "${MAX_CONNECTIONS_PER_USER}"
 
   #Section database
   if [ "${DATABASE_TYPE}" = 'postgresql' ]; then
