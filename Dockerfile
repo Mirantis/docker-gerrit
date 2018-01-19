@@ -65,8 +65,7 @@ ADD $GERRITFORGE_URL/job/plugin-gitiles-$PLUGIN_VERSION/$GERRITFORGE_ARTIFACT_DI
 
 # Copy custom gerrit themes
 COPY static $GERRIT_SITE/static
-# XXX - We dont using per-project themes now
-#COPY themes $GERRIT_SITE/themes
+COPY themes $GERRIT_SITE/themes
 
 # Copy custom etc
 COPY etc $GERRIT_SITE/etc
