@@ -4,12 +4,11 @@ MAINTAINER zsx <thinkernel@gmail.com>
 
 # Overridable defaults
 ARG GERRIT_HOME=/var/lib/gerrit
-ARG GERRIT_VERSION=2.13.6
-ARG PLUGIN_VERSION=stable-2.13
+ARG GERRIT_VERSION=2.14.6
+ARG PLUGIN_VERSION=bazel-stable-2.14
 ARG GERRIT_INIT_ARGS=""
 ARG MYSQL_CONNECTOR_VERSION=5.1.21
-ARG GERRIT_OAUTH_VERSION=2.13.2
-ARG BOUNCY_CASTLE_VERSION=1.52
+ARG GERRIT_OAUTH_VERSION=2.14.3
 
 ARG CI_USER_NAME=mcp-jenkins
 
@@ -21,12 +20,10 @@ ENV \
     GERRIT_USER=gerrit2 \
     GERRIT_INIT_ARGS=$GERRIT_INIT_ARGS \
     GERRITFORGE_URL=https://gerrit-ci.gerritforge.com \
-    GERRITFORGE_ARTIFACT_DIR=lastSuccessfulBuild/artifact/buck-out/gen/plugins \
+    GERRITFORGE_ARTIFACT_DIR=lastSuccessfulBuild/artifact/bazel-genfiles/plugins \
     MYSQL_CONNECTOR_VERSION=$MYSQL_CONNECTOR_VERSION \
     PLUGIN_VERSION=$PLUGIN_VERSION \
     GERRIT_OAUTH_VERSION=$GERRIT_OAUTH_VERSION \
-    BOUNCY_CASTLE_VERSION=$BOUNCY_CASTLE_VERSION \
-    BOUNCY_CASTLE_URL=http://central.maven.org/maven2/org/bouncycastle \
     CI_USER_NAME=$CI_USER_NAME
 
 VOLUME $GERRIT_SITE
@@ -45,20 +42,17 @@ ADD https://gerrit-releases.storage.googleapis.com/gerrit-$GERRIT_VERSION.war \
 ADD $GERRITFORGE_URL/job/plugin-delete-project-$PLUGIN_VERSION/$GERRITFORGE_ARTIFACT_DIR/delete-project/delete-project.jar \
     $GERRIT_SITE/plugins/
 
-ADD $GERRITFORGE_URL/job/plugin-project-download-commands-$PLUGIN_VERSION/$GERRITFORGE_ARTIFACT_DIR/project-download-commands/project-download-commands.jar \
+# XXX - removed plugin_version because target source only have master
+ADD $GERRITFORGE_URL/job/plugin-project-download-commands-bazel-master/$GERRITFORGE_ARTIFACT_DIR/project-download-commands/project-download-commands.jar \
     $GERRIT_SITE/plugins/
+#ADD $GERRITFORGE_URL/job/plugin-project-download-commands-$PLUGIN_VERSION/$GERRITFORGE_ARTIFACT_DIR/project-download-commands/project-download-commands.jar \
+#    $GERRIT_SITE/plugins/
 
 ADD $GERRITFORGE_URL/job/plugin-events-log-$PLUGIN_VERSION/$GERRITFORGE_ARTIFACT_DIR/events-log/events-log.jar \
     $GERRIT_SITE/plugins/
 
 ADD $GERRITFORGE_URL/job/plugin-replication-$PLUGIN_VERSION/$GERRITFORGE_ARTIFACT_DIR/replication/replication.jar \
     $GERRIT_SITE/plugins/
-
-ADD $BOUNCY_CASTLE_URL/bcprov-jdk15on/$BOUNCY_CASTLE_VERSION/bcprov-jdk15on-$BOUNCY_CASTLE_VERSION.jar \
-    $GERRIT_SITE/lib/
-
-ADD $BOUNCY_CASTLE_URL/bcpkix-jdk15on/$BOUNCY_CASTLE_VERSION/bcpkix-jdk15on-$BOUNCY_CASTLE_VERSION.jar \
-    $GERRIT_SITE/lib/
 
 ADD https://repo1.maven.org/maven2/mysql/mysql-connector-java/$MYSQL_CONNECTOR_VERSION/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar \
     $GERRIT_SITE/lib/
@@ -72,6 +66,9 @@ ADD $GERRITFORGE_URL/job/plugin-gitiles-$PLUGIN_VERSION/$GERRITFORGE_ARTIFACT_DI
 # Copy custom gerrit themes
 COPY static $GERRIT_SITE/static
 COPY themes $GERRIT_SITE/themes
+
+# Copy custom etc
+COPY etc $GERRIT_SITE/etc
 
 # Ensure the entrypoint scripts are in a fixed location
 COPY gerrit-entrypoint.sh gerrit-start.sh /
